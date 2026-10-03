@@ -38,8 +38,8 @@ export class AuthService {
     private getCookieOptions() {
         return {
             httpOnly: true,
-            secure: this.configService.get<string>('NODE_ENV') === 'production',
-            sameSite: 'lax' as const,
+            secure: true,
+            sameSite: 'none' as const,
             maxAge: ACCESS_TOKEN_MAX_AGE,
             path: '/',
         };
