@@ -10,6 +10,8 @@ import {
     Plus,
     Sparkles,
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { apiRequest, type User } from './api';
 
 type ChatRole = 'user' | 'assistant';
@@ -232,6 +234,19 @@ export default function DocumentChat({ document, user, isSigningOut, signOutErro
                                         <div className="message-content">
                                             {message.pending ? (
                                                 <div className="thinking-indicator"><span /><span /><span /> Reading the document…</div>
+                                            ) : message.role === 'assistant' ? (
+                                                <div className="ai-markdown-content">
+                                                    <ReactMarkdown
+                                                        remarkPlugins={[remarkGfm]}
+                                                        components={{
+                                                            a: ({ node, ...props }) => (
+                                                                <a target="_blank" rel="noopener noreferrer" {...props} />
+                                                            ),
+                                                        }}
+                                                    >
+                                                        {message.content}
+                                                    </ReactMarkdown>
+                                                </div>
                                             ) : (
                                                 <p>{message.content}</p>
                                             )}

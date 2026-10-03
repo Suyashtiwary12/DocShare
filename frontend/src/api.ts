@@ -12,6 +12,7 @@ export const API_URL = import.meta.env.VITE_API_URL;
 
 export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
     path = path.replace(/^\/+/, '');
+
     const headers = new Headers(init.headers);
     const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData;
 
