@@ -8,7 +8,13 @@ type ApiErrorBody = {
     message?: string | string[];
 };
 
+export const API_URL = import.meta.env.VITE_API_URL;
+
 export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
+    path = path.replace(/^\/+/, '');
+
+    console.log('API REQUEST:', `${API_URL}/${path}`);
+
     const headers = new Headers(init.headers);
     const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData;
 
@@ -18,13 +24,13 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
 
     let response: Response;
     try {
-        response = await fetch(`/api${path}`, {
+        response = await fetch(`${API_URL}/${path}`, {
             ...init,
             headers,
             credentials: 'include',
         });
     } catch {
-        throw new Error('Cannot reach the API. Make sure the NestJS server is running on port 3000.');
+        throw new Error('Cannot reach the API. Make sure the NestJS server is running.');
     }
 
     const body = await response.json().catch(() => null) as ApiErrorBody | null;
