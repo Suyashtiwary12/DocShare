@@ -25,6 +25,10 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Frontend API Guide
+
+See [docs/frontend-user-stories.md](docs/frontend-user-stories.md) for frontend user stories, endpoint mappings, request payloads, authentication requirements, and workflow notes.
+
 ## Project setup
 
 ```bash

@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EmbeddingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ConversationMessageRole {
+  USER
+  ASSISTANT
+}
+
+model User {
+  id              String            @id @default(uuid())
+  name            String
+  email           String            @unique
+  password        String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  documents       Document[]
+  sharedDocuments DocumentShare[]
+  conversations   Conversation[]
+  comments        DocumentComment[]
+
+  @@map("users")
+}
+
+model Document {
+  id              String            @id @default(uuid())
+  filename        String
+  s3Key           String
+  fileSize        Int
+  mimeType        String
+  summary         String?
+  ownerId         String
+  owner           User              @relation(fields: [ownerId], references: [id])
+  shares          DocumentShare[]
+  conversations   Conversation[]
+  comments        DocumentComment[]
+  shareToken      String?           @unique
+  embeddingStatus EmbeddingStatus   @default(COMPLETED)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([ownerId])
+  @@map("documents")
+}
+
+model Conversation {
+  id         String                @id @default(uuid())
+  userId     String
+  user       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documentId String
+  document   Document              @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  title      String?
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  messages   ConversationMessage[]
+
+  @@index([userId])
+  @@index([documentId])
+  @@map("conversations")
+}
+
+model ConversationMessage {
+  id             String                  @id @default(uuid())
+  conversationId String
+  conversation   Conversation            @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           ConversationMessageRole
+  content        String
+  createdAt      DateTime                @default(now())
+
+  @@index([conversationId, createdAt])
+  @@map("conversation_messages")
+}
+
+model DocumentComment {
+  id         String            @id @default(uuid())
+  documentId String
+  document   Document          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId   String?
+  parent     DocumentComment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    DocumentComment[] @relation("CommentThread")
+  content    String
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([documentId, createdAt])
+  @@index([parentId])
+  @@index([userId])
+  @@map("document_comments")
+}
+
+model DocumentShare {
+  id         String   @id @default(uuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  email      String
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  invitedBy  String
+  createdAt  DateTime @default(now())
+
+  @@unique([documentId, email])
+  @@index([email])
+  @@index([userId])
+  @@map("document_shares")
+}
